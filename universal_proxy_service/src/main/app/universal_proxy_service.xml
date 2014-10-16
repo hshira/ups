@@ -9,6 +9,6 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
     <flow name="universal_proxy_serviceFlow1" doc:name="universal_proxy_serviceFlow1">
         <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" doc:name="HTTP"/>
         <logger message="Waymond HTTP Logger Test 10-09" level="INFO" doc:name="Logger"/>
-        <payload-type-filter expectedType="" doc:name="Payload"/>
+        <set-payload value="Hello World, Test by Waymond Young" doc:name="Set Payload"/>
     </flow>
 </mule>
