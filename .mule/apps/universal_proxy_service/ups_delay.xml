@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="CE-3.5.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+    <flow name="HTTP_Delay" doc:name="HTTP_Delay">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="delay" doc:name="HTTP"/>
+        <set-variable variableName="delay" value="#[message.inboundProperties.'http.query.params'.delay]" doc:name="Variable"/>
+        <response>
+            <http:outbound-endpoint exchange-pattern="request-response" host="#[endurl]" port="80" method="GET" doc:name="HTTP"/>
+        </response>
+        <set-variable variableName="endurl" value="#[message.inboundProperties.'http.query.params'.endurl]" doc:name="Variable"/>
+        <logger message="The delay is #[delay], the endURL is #[endurl]" level="INFO" doc:name="Logger"/>
+        <scripting:component doc:name="Groovy">
+            <scripting:script engine="Groovy"><![CDATA[int sleeptime = new java.lang.Integer(message.getInvocationProperty('delay'));
+java.lang.Thread.sleep(sleeptime);]]></scripting:script>
+        </scripting:component>
+    </flow>
+</mule>
