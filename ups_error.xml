@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="CE-3.5.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+    <flow name="ups_error404Flow1" doc:name="ups_error404Flow1">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="error404" doc:name="HTTP"/>
+        <set-variable variableName="endurl" value="#[message.inboundProperties.'http.query.params'.endurl]" doc:name="Variable"/>
+        <set-variable variableName="errorCode" value="#[message.inboundProperties.'http.query.params'.errorCode]" doc:name="Variable"/>
+        <logger message="The endURL is #[endurl], The errorCode is #[errorCode]" level="INFO" doc:name="Logger"/>
+        <scripting:component doc:name="Groovy">
+            <scripting:script engine="Groovy"><![CDATA[int error = new java.lang.Integer(message.getInvocationProperty('errorCode'));
+if(error < 400 || error > 599)
+{
+	 message.setInvocationProperty('errorCode', -1);
+}
+]]></scripting:script>
+        </scripting:component>
+        <choice doc:name="Choice"> <when expression="#[errorCode &gt; 0]">
+                <http:response-builder status="#[errorCode]" doc:name="HTTP Response Builder"/>
+                </when>
+            <otherwise>
+                <logger message="Invalid error code" level="INFO" doc:name="Logger"/>
+            </otherwise>
+            <!-- <otherwise>
+                <logger message="Invalid error code" level="INFO" doc:name="Logger"/>
+            </otherwise> -->
+        </choice>
+    </flow>
+</mule>
