@@ -13,10 +13,52 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
         <set-variable variableName="endurl" value="#[message.inboundProperties.'http.query.params'.endurl]" doc:name="Variable"/>
         <logger message="The delay is #[delay], the endURL is #[endurl]" level="INFO" doc:name="Logger"/>
         <scripting:component doc:name="Groovy">
-            <scripting:script engine="Groovy"><![CDATA[int sleeptime = new java.lang.Integer(message.getInvocationProperty('delay'));
+            <scripting:script engine="Groovy"><![CDATA[java.lang.String input = message.getInvocationProperty('delay');
+int sleeptime = 0;
+
+if(input.equalsIgnoreCase("random"))
+{
+	java.util.Random rand = new java.util.Random();
+	
+	sleeptime = rand.nextInt(30001);
+	
+	message.setInvocationProperty('delay', sleeptime);
+}
+else
+{
+	try
+	{
+		sleeptime = new java.lang.Integer(input);
+	
+		if(sleeptime < 0 || sleeptime > 30000)
+		{
+			throw new java.lang.NumberFormatException();
+		}
+		
+		message.setInvocationProperty('delay', sleeptime);
+	}
+	catch(java.lang.NumberFormatException e)
+	{
+		message.setInvocationProperty('delay', -1);
+	}
+}]]></scripting:script>
+        </scripting:component>
+
+        <choice doc:name="Choice">
+            <when expression="#[delay &gt; 0]">
+                <scripting:component doc:name="Groovy">
+                    <scripting:script engine="Groovy"><![CDATA[int sleeptime = new java.lang.Integer(message.getInvocationProperty('delay'));
 
 java.lang.Thread.sleep(sleeptime);]]></scripting:script>
-        </scripting:component>
-        <http:outbound-endpoint exchange-pattern="request-response" host="#[endurl]" port="80" method="GET" doc:name="HTTP"/>
+                </scripting:component>
+                <http:outbound-endpoint exchange-pattern="request-response" host="#[endurl]" port="80" method="GET" doc:name="HTTP"/>
+
+            </when>
+            <otherwise>
+                <logger message="Invalid delay." level="INFO" doc:name="Logger"/>
+
+            </otherwise>
+        </choice>
+
     </flow>
 </mule>

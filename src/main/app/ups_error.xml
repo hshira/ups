@@ -7,16 +7,40 @@
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
-    <flow name="ups_error404Flow1" doc:name="ups_error404Flow1">
-        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="error404" doc:name="HTTP"/>
+    <flow name="ups_errorFlow1" doc:name="ups_errorFlow1">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="error" doc:name="HTTP"/>
         <set-variable variableName="endurl" value="#[message.inboundProperties.'http.query.params'.endurl]" doc:name="Variable"/>
         <set-variable variableName="errorCode" value="#[message.inboundProperties.'http.query.params'.errorCode]" doc:name="Variable"/>
         <logger message="The endURL is #[endurl], The errorCode is #[errorCode]" level="INFO" doc:name="Logger"/>
         <scripting:component doc:name="Groovy">
-            <scripting:script engine="Groovy"><![CDATA[int error = new java.lang.Integer(message.getInvocationProperty('errorCode'));
-if(error < 400 || error > 599)
+            <scripting:script engine="Groovy"><![CDATA[java.lang.String input = message.getInvocationProperty('errorCode');
+int error = 0;
+
+if(input.equalsIgnoreCase("random"))
 {
-	 message.setInvocationProperty('errorCode', -1);
+	java.util.Random rand = new java.util.Random();
+	
+	error = rand.nextInt(200) + 400;
+	
+	message.setInvocationProperty('errorCode', error);
+}
+else
+{
+	try
+	{
+		error = new java.lang.Integer(input);
+		
+		if(error < 400 || error > 599)
+		{
+			throw new java.lang.NumberFormatException(); 
+		}
+		
+		message.setInvocationProperty('errorCode', error);
+	}
+	catch(java.lang.NumberFormatException e)
+	{
+		message.setInvocationProperty('errorCode', -1);
+	}
 }
 ]]></scripting:script>
         </scripting:component>
