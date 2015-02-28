@@ -7,7 +7,7 @@
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
     <flow name="upsFlow1" doc:name="upsFlow1">
-        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" doc:name="HTTP" path="hello"/>
+        <http:inbound-endpoint exchange-pattern="request-response" host="0.0.0.0" port="8081" doc:name="HTTP" path="hello"/>
         <logger message="Hello UTD students" level="INFO" doc:name="Logger"/>
         <set-payload value="Hello UTD students" doc:name="Set Payload"/>
     </flow>
