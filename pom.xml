@@ -142,6 +142,22 @@
 		        <classpathScope>compile</classpathScope>
 		        </configuration>
 		      </plugin>
+		          <plugin>
+			      <groupId>com.spotify</groupId>
+			 	<artifactId>docker-maven-plugin</artifactId>
+      				<version>VERSION GOES HERE</version>
+      				<configuration>
+        				<imageName>ups</imageName>
+        				<dockerDirectory>docker</dockerDirectory>
+        				<resources>
+           				     <resource>
+             					<targetPath>/</targetPath>
+             					<directory>${project.build.directory}</directory>
+             					<include>${project.build.finalName}.zip</include>
+           				     </resource>
+        				</resources>
+      				</configuration>
+    			</plugin>
 		</plugins>
 	</build>
 
