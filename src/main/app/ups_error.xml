@@ -8,7 +8,7 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
     <flow name="ups_errorFlow1" doc:name="ups_errorFlow1">
-        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="error" doc:name="HTTP"/>
+        <http:inbound-endpoint exchange-pattern="request-response" host="0.0.0.0" port="8081" path="ups-service/error" doc:name="HTTP"/>
         <set-variable variableName="endurl" value="#[message.inboundProperties.'http.query.params'.endurl]" doc:name="Variable"/>
         <set-variable variableName="errorCode" value="#[message.inboundProperties.'http.query.params'.errorCode]" doc:name="Variable"/>
         <logger message="The endURL is #[endurl], The errorCode is #[errorCode]" level="INFO" doc:name="Logger"/>
@@ -44,7 +44,7 @@ else
 }
 ]]></scripting:script>
         </scripting:component>
-        <choice doc:name="Choice"> <when expression="#[errorCode &gt; 0]">
+        <choice doc:name="Choice"> <when expression="#[errorCode &gt; 0]">	
                 <http:response-builder status="#[errorCode]" doc:name="HTTP Response Builder"/>
                 </when>
             <otherwise>
