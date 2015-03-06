@@ -1,7 +1,8 @@
 Universal Proxy Service: UPS
 ===
 
-* UPS is a RESTful service
+UPS is a RESTful service that --
+
 * Provides capability to introduce latency in response time to any service via a parameter on the URL. Example:  https://localhost:8081/ups-svc?delay=1000ms)
 * Provides capability to return error responses specified by errorCode and errorRate as below.  Example:  https://localhost:8081/ups-svc?errorRate=50%&errorCode=503
 
