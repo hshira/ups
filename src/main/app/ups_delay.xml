@@ -8,9 +8,10 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
 	<flow name="ups_delayFlow1" doc:name="ups_delayFlow1">
-		<http:inbound-endpoint exchange-pattern="request-response" host="0.0.0.0" port="8081" path="ups-service/delay" doc:name="HTTP" />
+		<http:inbound-endpoint exchange-pattern="request-response" host="0.0.0.0" port="8081" path="ups-service/proxy" doc:name="HTTP" />
+		<set-variable variableName="http_method" value="#[message.inboundProperties.'http.method']" doc:name="delay" />
 		<set-variable variableName="delay" value="#[message.inboundProperties.'http.query.params'.ms]" doc:name="delay" />
-		<set-variable variableName="endurl" value="#[message.inboundProperties.'http.query.params'.endurl]" doc:name="endurl" />
+		<set-variable variableName="endurl" value="#[message.inboundProperties.'http.query.params'.endUrl]" doc:name="endurl" />
 		<logger message="The delay requested is #[delay], the endURL is #[endurl]" level="INFO" doc:name="Logger" />
 		<flow-ref name="process-delay" />
 		<logger message="The delay created is #[delay], the endURL is #[endurl]" level="INFO" doc:name="Logger" />
@@ -19,52 +20,67 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
 	<sub-flow name="process-delay">
 		<scripting:component doc:name="Groovy">
 			<scripting:script engine="Groovy"><![CDATA[java.lang.String input = message.getInvocationProperty('delay');
-int sleeptime = 0;
-
-if(input.equalsIgnoreCase("random"))
-{
-	java.util.Random rand = new java.util.Random();
-	
-	sleeptime = rand.nextInt(30001);
-	
-	message.setInvocationProperty('delay', sleeptime);
-}
-else
-{
-	try
-	{
-		sleeptime = new java.lang.Integer(input);
-	
-		if(sleeptime < 0 || sleeptime > 30000)
-		{
-			throw new java.lang.NumberFormatException();
-		}
-		
-		message.setInvocationProperty('delay', sleeptime);
-	}
-	catch(java.lang.NumberFormatException e)
-	{
-		message.setInvocationProperty('delay', -1);
-	}
-}]]>
+				int sleeptime = 0;
+				
+				if(input.equalsIgnoreCase("random"))
+				{
+					java.util.Random rand = new java.util.Random();
+					
+					sleeptime = rand.nextInt(30001);
+					
+					message.setInvocationProperty('delay', sleeptime);
+				}
+				else
+				{
+					try
+					{
+						sleeptime = new java.lang.Integer(input);
+					
+						if(sleeptime < 0 || sleeptime > 30000)
+						{
+							throw new java.lang.NumberFormatException();
+						}
+						
+						message.setInvocationProperty('delay', sleeptime);
+					}
+					catch(java.lang.NumberFormatException e)
+					{
+						message.setInvocationProperty('delay', -1);
+					}
+				}]]>
 			</scripting:script>
 		</scripting:component>
 
 		<choice doc:name="Choice">
 			<when expression="#[delay &gt; 0]">
 				<scripting:component doc:name="Groovy">
-					<scripting:script engine="Groovy"><![CDATA[int sleeptime = new java.lang.Integer(message.getInvocationProperty('delay'));
-
-java.lang.Thread.sleep(sleeptime);]]></scripting:script>
+					<scripting:script engine="Groovy">
+						<![CDATA[int sleeptime = new java.lang.Integer(message.getInvocationProperty('delay'));
+						java.lang.Thread.sleep(sleeptime);]]>
+					</scripting:script>
 				</scripting:component>
-				<http:outbound-endpoint exchange-pattern="request-response" host="#[endurl]" port="80" method="GET" doc:name="HTTP" />
-
 			</when>
 			<otherwise>
 				<logger message="Invalid delay." level="INFO" doc:name="Logger" />
-
 			</otherwise>
 		</choice>
-
+		<choice doc:name="Choice">
+			<when expression="#[http_method == 'GET']">
+				<logger message="Making a GET call to #[endurl]" level="INFO" doc:name="Logger" />
+				<http:outbound-endpoint exchange-pattern="request-response" host="#[endurl]" port="80" method="GET" doc:name="HTTP" />
+			</when>
+			<when expression="#[http_method == 'PUT']">
+				<logger message="Making a PUT call to #[endurl]" level="INFO" doc:name="Logger" />
+				<http:outbound-endpoint exchange-pattern="request-response" host="#[endurl]" port="80" method="PUT" doc:name="HTTP" />
+			</when>
+			<when expression="#[http_method == 'POST']">
+				<logger message="Making a POST call to #[endurl]" level="INFO" doc:name="Logger" />
+				<http:outbound-endpoint exchange-pattern="request-response" host="#[endurl]" port="80" method="POST" doc:name="HTTP" />
+			</when>
+			<when expression="#[http_method == 'DELETE']">
+				<logger message="Making a DELETE call to #[endurl]" level="INFO" doc:name="Logger" />
+				<http:outbound-endpoint exchange-pattern="request-response" host="#[endurl]" port="80" method="DELETE" doc:name="HTTP" />
+			</when>
+		</choice>
 	</sub-flow>
 </mule>
