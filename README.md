@@ -18,16 +18,16 @@ docker run -d -p 8081:8081  hshira/ups:latest
 http://192.168.59.103:8081/ups-service/health
 ``` 
 
-[Error 401](http://192.168.59.103:8081/ups-service/error/?errorCode=401&endUrl=www.google.com) 
+[Error 401](http://192.168.59.103:8081/ups-service/error/?errorCode=401&endUrl=http://www.google.com) 
 
 ```
-http://192.168.59.103:8081/ups-service/error/?errorCode=401&endUrl=www.google.com
+http://192.168.59.103:8081/ups-service/error/?errorCode=401&endUrl=http://www.google.com
 ```
 
-[Delay 5000 ms](http://192.168.59.103:8081/ups-service/proxy/?ms=5000&endUrl=www.google.com) 
+[Delay 5000 ms](http://192.168.59.103:8081/ups-service/proxy/?ms=5000&endUrl=http://www.google.com) 
 
 ```
-http://192.168.59.103:8081/ups-service/proxy/?ms=5000&endUrl=www.google.com
+http://192.168.59.103:8081/ups-service/proxy/?ms=5000&endUrl=http://www.google.com
 ```
 
 
