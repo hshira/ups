@@ -3,7 +3,7 @@ Universal Proxy Service: UPS
 
 UPS is a RESTful service that --
 
-* Provides capability to introduce latency in response time to any service via a parameter on the URL. Example:  https://localhost:8081/ups-svc?delay=1000ms)
+* Provides capability to introduce create a proxy layer and add latency in response time to any service via a parameter on the URL. Example:  https://localhost:8081/ups-svc?delay=1000ms)
 * Provides capability to return error responses specified by errorCode and errorRate as below.  Example:  https://localhost:8081/ups-svc?errorRate=50%&errorCode=503
 
 Run using Docker
@@ -24,10 +24,10 @@ http://192.168.59.103:8081/ups-service/health
 http://192.168.59.103:8081/ups-service/error/?errorCode=401&endUrl=www.google.com
 ```
 
-[Delay 5000 ms](http://192.168.59.103:8081/ups-service/delay/?ms=5000&endUrl=www.google.com) 
+[Delay 5000 ms](http://192.168.59.103:8081/ups-service/proxy/?ms=5000&endUrl=www.google.com) 
 
 ```
-http://192.168.59.103:8081/ups-service/delay/?ms=5000&endUrl=www.google.com
+http://192.168.59.103:8081/ups-service/proxy/?ms=5000&endUrl=www.google.com
 ```
 
 
