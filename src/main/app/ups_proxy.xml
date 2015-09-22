@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <mule xmlns:https="http://www.mulesoft.org/schema/mule/https" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.7.0"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.2"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
@@ -10,11 +10,15 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
 http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/https/current/mule-https.xsd">
 	<spring:beans>
 		<spring:bean id="parseUrl" name="parseUrl" class="com.intuit.ups.ParseURL" />
-</spring:beans>
-	<flow name="ups_delayFlow1" >
+	</spring:beans>
+	
+	<flow name="ups-proxy-flow" doc:name="ups-proxy-flow">
 		<http:inbound-endpoint exchange-pattern="request-response" host="0.0.0.0" port="8082" path="ups-service/proxy" doc:name="HTTP" />
+        <object-to-string-transformer doc:name="Object to String"/>
+        <set-variable variableName="originalPayload" value="#[payload]" doc:name="delay" />
+		<logger message="Initial payload: #[payload]" doc:name="Logger" level="INFO" />
 		<set-variable variableName="http_method" value="#[message.inboundProperties.'http.method']" doc:name="delay" />
-		<set-variable variableName="stringUrl" value="#[message.inboundProperties.'http.query.params'.endUrl]" />
+		<set-variable variableName="stringUrl" value="#[message.inboundProperties.'http.query.params'.endUrl]" doc:name="Variable"/>
 		<set-variable variableName="endurl" value="" doc:name="endurl" />
 		<logger message="The stringUrl is #[stringUrl.toString()]" level="INFO" doc:name="Logger" />
 		<enricher target="#[endurl]" doc:name="Source Entitlements Enricher">
@@ -28,10 +32,12 @@ http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/ht
 		<logger message="The delay requested is #[delay], the protocol is #[redirect_protocol],  the host is #[redirect_host], port is #[redirect_port], path is #[redirect_path]" level="INFO" doc:name="Logger" />
 		<flow-ref name="process-delay" doc:name="Flow Reference"/>
 		<logger message="The delay created is #[delay], the endURL is #[redirect_host]" level="INFO" doc:name="Logger" />
+		<set-payload value="#[originalPayload]"/>
+		<logger message="Sending payload: #[payload]" doc:name="Logger"/>
 		<flow-ref name="call-http-endpoint" doc:name="call-http-endpoint"/>
 	</flow>
 
-	<sub-flow name="process-delay">
+	<sub-flow name="process-delay" doc:name="process-delay">
 		<scripting:component doc:name="Groovy">
 			<scripting:script engine="Groovy"><![CDATA[java.lang.String input = message.getInvocationProperty('delay');
 				int sleeptime = 0;
@@ -79,7 +85,7 @@ http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/ht
 			</otherwise>
 		</choice>
 	</sub-flow>
-	<sub-flow name="call-http-endpoint">
+	<sub-flow name="call-http-endpoint" doc:name="call-http-endpoint">
 		<logger level="INFO" message="Calling HTTP endpoints" doc:name="Logger" />
 		<choice doc:name="Choice">
 			<when expression="#[http_method == 'GET']">
@@ -105,7 +111,7 @@ http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/ht
 		<logger message="Response from HTTP call #[message]" level="INFO" doc:name="Logger" />
 		<logger message="Payload from HTTP call #[payload]" level="INFO" doc:name="Logger" />
 	</sub-flow>
-	<sub-flow name="call-https-endpoint">
+	<sub-flow name="call-https-endpoint" doc:name="call-https-endpoint">
 		<logger level="INFO" message="Calling HTTPS endpoints" doc:name="Logger" />
 		<choice doc:name="Choice">
 			<when expression="#[http_method == 'GET']">
